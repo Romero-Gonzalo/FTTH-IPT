@@ -1,0 +1,141 @@
+<div class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="max-w-3xl mx-auto p-6">
+    <div class="flex items-center justify-between">
+      <a routerLink="/ordenes" class="text-slate-300 hover:text-white">← Volver</a>
+
+      <div class="flex items-center gap-2" *ngIf="orden">
+        <button
+          type="button"
+          (click)="toggleEdit()"
+          class="px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 transition"
+        >
+          {{ editMode ? "Cancelar" : "Editar" }}
+        </button>
+
+        <button
+          type="button"
+          (click)="remove()"
+          [disabled]="deleting"
+          class="px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200 hover:bg-red-500/20 transition disabled:opacity-60"
+        >
+          {{ deleting ? "Eliminando..." : "Eliminar" }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="errorMsg" class="mt-6 p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200">
+      {{ errorMsg }}
+    </div>
+
+    <div class="mt-6" *ngIf="loading">Cargando...</div>
+
+    <!-- VISTA NORMAL -->
+    <div *ngIf="!loading && orden && !editMode" class="mt-6 p-5 rounded-2xl border border-slate-800 bg-slate-900/40">
+      <div class="text-xl font-bold">{{ orden.numero }}</div>
+      <div class="text-slate-300 mt-1">{{ orden.abonadoNombre }} · {{ orden.telefono || "sin teléfono" }}</div>
+
+      <div class="mt-4 grid gap-2 text-sm">
+        <div><span class="text-slate-400">Tipo:</span> {{ orden.tipo }}</div>
+        <div><span class="text-slate-400">Estado:</span> {{ orden.estado }}</div>
+        <div><span class="text-slate-400">Plan:</span> {{ orden.planMbps ?? "-" }} Mbps</div>
+        <div><span class="text-slate-400">MAC:</span> {{ orden.macEquipo || "-" }}</div>
+        <div><span class="text-slate-400">Referencia:</span> {{ orden.referenciaCasa || "-" }}</div>
+        <div><span class="text-slate-400">Descripción:</span> {{ orden.descripcion || "-" }}</div>
+        <div><span class="text-slate-400">Barrio:</span> {{ orden.barrio || "-" }}</div>
+<div><span class="text-slate-400">Técnico:</span> {{ orden.tecnico || "Sin asignar" }}</div>
+
+        <div *ngIf="orden.ubicacion?.lat != null && orden.ubicacion?.lng != null" class="mt-2">
+          <a
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/25 transition"
+            [href]="mapsUrl(orden.ubicacion!.lat, orden.ubicacion!.lng)"
+            target="_blank"
+            rel="noreferrer"
+          >
+            📍 Abrir ubicación en Maps
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODO EDICIÓN -->
+    <div *ngIf="!loading && orden && editMode" class="mt-6 p-5 rounded-2xl border border-slate-800 bg-slate-900/40">
+      <div class="text-xl font-bold">Editar {{ orden.numero }}</div>
+
+      <div class="mt-4 grid gap-4">
+        <div class="grid gap-2">
+          <label class="text-sm text-slate-300">Tipo</label>
+          <select [(ngModel)]="tipo" class="bg-slate-900 border border-slate-800 rounded-xl p-2">
+            <option value="INSTALACION_FTTH">Instalación FTTH</option>
+            <option value="REUBICACION_BAJADA">Reubicación de bajada</option>
+            <option value="MIGRACION_HFC_A_FTTH">Migración HFC → FTTH</option>
+          </select>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label class="text-sm text-slate-300">Estado</label>
+            <select [(ngModel)]="estado" class="bg-slate-900 border border-slate-800 rounded-xl p-2">
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="EN_PROGRESO">EN_PROGRESO</option>
+              <option value="FINALIZADA">FINALIZADA</option>
+            </select>
+          </div>
+
+          <div class="grid gap-2">
+            <label class="text-sm text-slate-300">Plan (Mbps)</label>
+            <input type="number" [(ngModel)]="planMbps" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+          <label class="text-sm text-slate-300">Abonado</label>
+          <input [(ngModel)]="abonadoNombre" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label class="text-sm text-slate-300">Teléfono</label>
+            <input [(ngModel)]="telefono" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+          </div>
+          <div class="grid gap-2">
+            <label class="text-sm text-slate-300">MAC equipo</label>
+            <input [(ngModel)]="macEquipo" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+          <label class="text-sm text-slate-300">Referencia casa</label>
+          <input [(ngModel)]="referenciaCasa" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+  <div class="grid gap-2">
+    <label class="text-sm text-slate-300">Barrio</label>
+    <input [(ngModel)]="barrio" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+  </div>
+
+  <div class="grid gap-2">
+    <label class="text-sm text-slate-300">Técnico asignado</label>
+    <input [(ngModel)]="tecnico" class="bg-slate-900 border border-slate-800 rounded-xl p-2" />
+  </div>
+</div>
+
+
+        <div class="grid gap-2">
+          <label class="text-sm text-slate-300">Descripción</label>
+          <textarea [(ngModel)]="descripcion" rows="4" class="bg-slate-900 border border-slate-800 rounded-xl p-2"></textarea>
+        </div>
+
+        <app-map-picker [(value)]="ubicacion"></app-map-picker>
+
+        <button
+          type="button"
+          (click)="save()"
+          [disabled]="saving"
+          class="mt-2 px-4 py-2 rounded-xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400 transition disabled:opacity-60"
+        >
+          {{ saving ? "Guardando..." : "Guardar cambios" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

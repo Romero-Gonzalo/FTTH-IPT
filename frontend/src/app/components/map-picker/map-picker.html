@@ -1,0 +1,26 @@
+<div class="w-full">
+  <div class="flex items-center justify-between mb-2">
+    <div class="text-sm text-slate-300">Ubicación</div>
+
+    <button
+      type="button"
+      (click)="useMyLocation()"
+      class="text-xs px-3 py-1 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 transition"
+    >
+      Usar mi ubicación
+    </button>
+  </div>
+
+  <div
+    id="map-picker"
+    class="rounded-2xl border border-slate-800 overflow-hidden"
+    [style.height.px]="heightPx"
+  ></div>
+
+  <div class="mt-2 text-xs text-slate-400" *ngIf="value">
+    Seleccionado: {{ value.lat | number: "1.5-5" }}, {{ value.lng | number: "1.5-5" }}
+  </div>
+  <div class="mt-2 text-xs text-slate-500" *ngIf="!value">
+    Hacé click en el mapa para colocar el pin.
+  </div>
+</div>

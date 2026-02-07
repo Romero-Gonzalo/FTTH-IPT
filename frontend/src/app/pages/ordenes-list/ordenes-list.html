@@ -1,0 +1,47 @@
+<div class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="max-w-5xl mx-auto p-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Órdenes</h1>
+        <p class="text-slate-400 text-sm">FTTH · Reubicación de bajada · Migración HFC → FTTH</p>
+      </div>
+
+      <a
+        routerLink="/ordenes/nueva"
+        class="px-4 py-2 rounded-xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400 transition"
+      >
+        + Nueva orden
+      </a>
+    </div>
+
+    <div *ngIf="errorMsg" class="mt-4 p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200">
+      {{ errorMsg }}
+      <button class="ml-3 underline" (click)="fetch()">Reintentar</button>
+    </div>
+
+    <div class="mt-6" *ngIf="loading">Cargando...</div>
+
+    <div class="mt-6 grid gap-3" *ngIf="!loading">
+      <a
+        *ngFor="let o of ordenes"
+        [routerLink]="['/ordenes', o.id]"
+        class="block p-4 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <div class="font-semibold">{{ o.numero }} · {{ o.abonadoNombre }}</div>
+          <span class="text-xs px-2 py-1 rounded-full border" [ngClass]="badgeClass(o.estado)">
+            {{ o.estado }}
+          </span>
+        </div>
+
+        <div class="text-sm text-slate-400 mt-1">
+          {{ tipoLabel(o.tipo) }} · {{ o.referenciaCasa || "Sin referencia" }}
+        </div>
+      </a>
+
+      <div *ngIf="ordenes.length === 0" class="text-slate-400">
+        No hay órdenes todavía. Creá la primera 👷‍♂️📍
+      </div>
+    </div>
+  </div>
+</div>
