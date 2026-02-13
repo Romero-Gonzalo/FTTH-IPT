@@ -55,6 +55,8 @@ tecnico = "";
         macEquipo: this.macEquipo.trim(),
         referenciaCasa: this.referenciaCasa.trim(),
         descripcion: this.descripcion.trim(),
+        barrio: this.barrio.trim(),
+        tecnico: this.tecnico.trim(),
         ubicacion: this.ubicacion,
       })
       .pipe(

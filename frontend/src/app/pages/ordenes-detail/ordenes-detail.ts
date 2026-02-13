@@ -143,7 +143,7 @@ export class OrdenesDetailPage implements OnInit {
       .subscribe({
         next: (updated) => {
           
-          this.orden = updated as any;
+          this.orden = updated;
           this.editMode = false;
           this.cdr.detectChanges();
         },

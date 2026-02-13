@@ -7,6 +7,31 @@ function makeNumero(id) {
   return `OT-${String(id).padStart(5, "0")}`;
 }
 
+function mapDbRow(r) {
+  return {
+    id: r.id,
+    numero: r.numero,
+    tipo: r.tipo,
+    abonadoNombre: r.abonadoNombre,
+    telefono: r.telefono || "",
+    planMbps: r.planMbps ?? null,
+    macEquipo: r.macEquipo || "",
+    referenciaCasa: r.referenciaCasa || "",
+    descripcion: r.descripcion || "",
+    barrio: r.barrio || "",
+    tecnico: r.tecnico || "",
+    estado: r.estado,
+    ubicacion:
+      r.ubicacionLat != null && r.ubicacionLng != null
+        ? { lat: r.ubicacionLat, lng: r.ubicacionLng }
+        : null,
+    ubicacionAnterior: null,
+    ubicacionNueva: null,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+  };
+}
+
 router.get("/ordenes", (req, res) => {
   db.all(
     `SELECT * FROM ordenes ORDER BY id DESC`,
@@ -14,26 +39,7 @@ router.get("/ordenes", (req, res) => {
     (err, rows) => {
       if (err) return res.status(500).json({ message: "DB error", err });
 
-      const data = rows.map((r) => ({
-        id: r.id,
-        numero: r.numero,
-        tipo: r.tipo,
-        abonadoNombre: r.abonadoNombre,
-        telefono: r.telefono || "",
-        planMbps: r.planMbps ?? null,
-        macEquipo: r.macEquipo || "",
-        referenciaCasa: r.referenciaCasa || "",
-        descripcion: r.descripcion || "",
-        estado: r.estado,
-        ubicacion:
-          r.ubicacionLat != null && r.ubicacionLng != null
-            ? { lat: r.ubicacionLat, lng: r.ubicacionLng }
-            : null,
-        ubicacionAnterior: null,
-        ubicacionNueva: null,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-      }));
+      const data = rows.map(mapDbRow);
 
       res.json(data);
     }
@@ -47,26 +53,7 @@ router.get("/ordenes/:id", (req, res) => {
     if (err) return res.status(500).json({ message: "DB error", err });
     if (!r) return res.status(404).json({ message: "No encontrada" });
 
-    res.json({
-      id: r.id,
-      numero: r.numero,
-      tipo: r.tipo,
-      abonadoNombre: r.abonadoNombre,
-      telefono: r.telefono || "",
-      planMbps: r.planMbps ?? null,
-      macEquipo: r.macEquipo || "",
-      referenciaCasa: r.referenciaCasa || "",
-      descripcion: r.descripcion || "",
-      estado: r.estado,
-      ubicacion:
-        r.ubicacionLat != null && r.ubicacionLng != null
-          ? { lat: r.ubicacionLat, lng: r.ubicacionLng }
-          : null,
-      ubicacionAnterior: null,
-      ubicacionNueva: null,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-    });
+    res.json(mapDbRow(r));
   });
 });
 
@@ -125,30 +112,16 @@ router.post("/ordenes", (req, res) => {
       if (err) return res.status(500).json({ message: "DB error", err });
 
       const id = this.lastID;
-      const numero = `OT-${String(id).padStart(5, "0")}`;
+      const numero = makeNumero(id);
 
       db.run(`UPDATE ordenes SET numero = ? WHERE id = ?`, [numero, id], (err2) => {
         if (err2) return res.status(500).json({ message: "DB error", err: err2 });
 
-        res.status(201).json({
-          id,
-          numero,
-          tipo,
-          abonadoNombre,
-          telefono,
-          planMbps,
-          macEquipo,
-          referenciaCasa,
-          descripcion,
-          barrio,      // 👈
-          tecnico,     // 👈
-          estado,
-          ubicacion:
-            ubicacionLat != null && ubicacionLng != null
-              ? { lat: ubicacionLat, lng: ubicacionLng }
-              : null,
-          createdAt,
-          updatedAt,
+        db.get(`SELECT * FROM ordenes WHERE id = ?`, [id], (err3, row) => {
+          if (err3) return res.status(500).json({ message: "DB error", err: err3 });
+          if (!row) return res.status(404).json({ message: "Orden no encontrada" });
+
+          res.status(201).json(mapDbRow(row));
         });
       });
     }
@@ -217,7 +190,12 @@ router.put("/ordenes/:id", (req, res) => {
       if (this.changes === 0)
         return res.status(404).json({ message: "Orden no encontrada" });
 
-      res.json({ message: "Orden actualizada" });
+      db.get(`SELECT * FROM ordenes WHERE id = ?`, [id], (err2, row) => {
+        if (err2) return res.status(500).json({ message: "DB error", err: err2 });
+        if (!row) return res.status(404).json({ message: "Orden no encontrada" });
+
+        res.json(mapDbRow(row));
+      });
     }
   );
 });
